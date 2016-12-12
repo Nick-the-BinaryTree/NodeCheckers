@@ -7,38 +7,55 @@ var grd2;
 var grd3;
 var traces;
 var mouseDown;
+var startClick; //{"x":x,"y":y}
+var endClick;
 
 $('document').ready(function(){
+    var socket = io();
+    
     var c = document.getElementById("layer1");
-    ctx=c.getContext("2d");
+    var ctx=c.getContext("2d");
     var c2 = document.getElementById("layer2");
-    ctx2=c2.getContext("2d");
+    var ctx2=c2.getContext("2d");
     var c3 = document.getElementById("layer3");
-    ctx3=c3.getContext("2d");
+    var ctx3=c3.getContext("2d");
     
    setVariables(ctx);
    drawBoard(ctx);
-   setBoard(ctx2)
-    
-   //drawPiece(ctx2, "red", 0,0, false);
-   //drawPiece(ctx2, "black", 90, 90, false);
-    
-   document.body.onmousedown = function(){mouseDown=1;}
-   document.body.onmouseup = function(){mouseDown=0;}
+   setBoard(ctx2);
    
-   c3.onmousemove=function(e){click(e, ctx3, c3)}
-   setInterval(function(){fadeTrace(ctx3)}, 10);
+   socket.on('update', function(newBoard){
+       board = newBoard;
+       setBoard(ctx2);
+   });
+    
+   document.body.onmousedown = function(e){
+       mouseDown=1;
+       startClick = getClickCoords(e, c);
+   }
+   document.body.onmouseup = function(e){
+       mouseDown=0;
+       endClick = getClickCoords(e, c);
+       var coords = {"from":toBCoord(startClick), "to":toBCoord(endClick)};
+       //console.log("emitting" + JSON.stringify(coords));
+       socket.emit('move', coords);
+   }
+   
+   c3.onmousemove=function(e){click(ctx3, e, c3)}
+   setInterval(function(){fadeTrace(ctx3)}, 30);
     
 });
 
-function click(event, ctx, c){
+function click(ctx, e, c){
     if(mouseDown===1){
-        x = event.pageX - c.offsetLeft - pieceRadius;
-        y = event.pageY - c.offsetTop - pieceRadius;
+        var coords = getClickCoords(e, c);
         
-        traces.push({"x":x,"y":y});
+        coords.x -= pieceRadius;
+        coords.y -= pieceRadius;
         
-        drawPiece(ctx, "trace", x, y, false);
+        traces.push(coords);
+        
+        drawPiece(ctx, "trace", coords.x, coords.y, false);
     }
 }
 
@@ -83,7 +100,6 @@ function drawBoard(ctx){
     for(row=0; row<8; row+=2){
         for(col=1; col<8; col+=2){
             ctx.fillRect(row*boxSize,col*boxSize,boxSize,boxSize);
-            //debugger
         }
     }
     
@@ -104,7 +120,7 @@ function fadeTrace(ctx){
 function setBoard(ctx){
     var letter = "a";
     var num;
-    debugger
+    ctx.clearRect(0, 0, boardLength, boardLength);
     for(x=0; x < 8; x++, letter=nextLetter(letter)){
         num="1";
         for(y=0; y < 8; y++, num=nextNum(num)){
@@ -123,6 +139,13 @@ function setBoard(ctx){
            }
         }
     }
+}
+
+function getClickCoords(e, c){
+    var x = e.pageX - c.offsetLeft;
+    var y = e.pageY - c.offsetTop;
+    
+    return {"x":x,"y":y};
 }
 
 function toXY(coord){
@@ -157,25 +180,6 @@ function toBCoord(coord){
     var x, y;
     
     if(quo < 1)
-        x = "1";
-    else if(quo < 2)
-        x = "2";
-    else if(quo < 3)
-        x = "3";
-    else if(quo < 4)
-        x = "4";
-    else if(quo < 5)
-        x = "5";
-    else if(quo < 6)
-        x = "6";
-    else if(quo < 7)
-        x = "7";
-    else
-        x = "8";
-    
-    quo = coord.y/boxSize;
-    
-    if(quo < 1)
         x = "a";
     else if(quo < 2)
         x = "b";
@@ -191,6 +195,25 @@ function toBCoord(coord){
         x = "g";
     else
         x = "h";
+    
+    quo = coord.y/boxSize;
+
+    if(quo < 1)
+        y = "1";
+    else if(quo < 2)
+        y = "2";
+    else if(quo < 3)
+        y = "3";
+    else if(quo < 4)
+        y = "4";
+    else if(quo < 5)
+        y = "5";
+    else if(quo < 6)
+        y = "6";
+    else if(quo < 7)
+        y = "7";
+    else
+        y = "8";
     
     return {"x":x, "y":y};
 }
