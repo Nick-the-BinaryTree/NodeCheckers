@@ -2,4 +2,4 @@
 
 Real-time checkers...?
 
-![ScreenShot](http://imgur.com/a/Gf1gT.png "Checkers")
+![ScreenShot](http://i.imgur.com/rqGq4QJ.png)
