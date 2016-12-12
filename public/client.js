@@ -5,12 +5,13 @@ var pieceRadius;
 var grd1;
 var grd2;
 var grd3;
-var traces;
+//var traces;
 var mouseDown;
 var startClick; //{"x":x,"y":y}
 var endClick;
+var winText;
 
-$('document').ready(function(){
+document.addEventListener("DOMContentLoaded", function(){
     var socket = io();
     
     var c = document.getElementById("layer1");
@@ -24,10 +25,16 @@ $('document').ready(function(){
    drawBoard(ctx);
    setBoard(ctx2);
    
+   socket.on('yourTeam', function(team){
+       document.getElementById('team').innerHTML = team;
+   });
+
    socket.on('update', function(newBoard){
        board = newBoard;
        setBoard(ctx2);
    });
+    
+   socket.on("win", function(team){win(team)});
     
    document.body.onmousedown = function(e){
        mouseDown=1;
@@ -35,6 +42,7 @@ $('document').ready(function(){
    }
    document.body.onmouseup = function(e){
        mouseDown=0;
+       ctx3.clearRect(0, 0, boardLength, boardLength);
        endClick = getClickCoords(e, c);
        var coords = {"from":toBCoord(startClick), "to":toBCoord(endClick)};
        //console.log("emitting" + JSON.stringify(coords));
@@ -42,8 +50,12 @@ $('document').ready(function(){
    }
    
    c3.onmousemove=function(e){click(ctx3, e, c3)}
-   setInterval(function(){fadeTrace(ctx3)}, 30);
+   //setInterval(function(){fadeTrace(ctx3)}, 30);
     
+   /*document.onkeypress = function(e){
+        console.log("did it");
+        socket.emit("redWin");
+   }*/
 });
 
 function click(ctx, e, c){
@@ -53,7 +65,7 @@ function click(ctx, e, c){
         coords.x -= pieceRadius;
         coords.y -= pieceRadius;
         
-        traces.push(coords);
+        //traces.push(coords);
         
         drawPiece(ctx, "trace", coords.x, coords.y, false);
     }
@@ -83,9 +95,9 @@ function drawPiece(ctx, team, x, y, king){
     }
     else{
         ctx.arc(centerX, centerY, pieceRadius/3, 0, 2 * Math.PI, false);
-        ctx.strokeStyle="rgba(0, 0, 0, .2)";
+        ctx.strokeStyle="rgba(0, 0, 0, .1)";
         ctx.stroke();
-        ctx.fillStyle="rgba(201, 201, 201, 0.005)";
+        ctx.fillStyle="rgba(201, 201, 201, 0.001)";
     }
     
     ctx.fill();
@@ -110,12 +122,12 @@ function drawBoard(ctx){
     }
 }
 
-function fadeTrace(ctx){
+/*function fadeTrace(ctx){
     if(traces.length > 0){
         ctx.clearRect(traces[0].x, traces[0].y, pieceRadius*1.5, pieceRadius*1.5);
         traces.shift();
     }
-}
+}*/
 
 function setBoard(ctx){
     var letter = "a";
@@ -139,6 +151,15 @@ function setBoard(ctx){
            }
         }
     }
+}
+
+function win(text){
+    winText.innerHTML = text;
+    winText.style.display = "block";
+    var win = setTimeout(function(){
+            clearTimeout(win);
+            winText.style.display = "none";
+        }, 1000);
 }
 
 function getClickCoords(e, c){
@@ -248,7 +269,8 @@ function setVariables(ctx){
     grd3 = ctx.createRadialGradient(150.000, 150.000, 0.000, 150.000, 150.000, 150.000);
     grd3.addColorStop(0.195, 'rgba(73, 73, 73, 1.000)');
     grd3.addColorStop(1.000, 'rgba(119, 119, 119, 1.000)');
-    traces = [];
+    winText = document.getElementById("winner");
+    //traces = [];
     board = {
       "a" : {
           "1" : "",

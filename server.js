@@ -88,7 +88,7 @@ var board = {
     "redCount" : 12
 };
 
-var reset = board;
+var reset = JSON.parse(JSON.stringify(board));
 
 var players = {
     "list" : [],
@@ -114,6 +114,9 @@ io.on('connection', function(socket){
     socket.on('disconnect', function(){
        remPlayer(socket.id); 
     });
+    
+    //socket.on('reset', function(){resetBoard()});
+    //socket.on('redWin', function(){board.blackCount=0;gameOver()});
 });
 
 //coord format {"x":"a", "col":"3"}
@@ -129,173 +132,127 @@ function move(from, to, id){
         
         if(current.charAt(0)==="r" && team==="red"){
             if(current.charAt(1)==="k"){
-                if(
-                    dest === ""
-                    && (to.x === nextLetter(from.x) || to.x === lastLetter(from.x)) //Move to empty up or down
-                    && (to.y === (parseInt(from.y)+1).toString() || (parseInt(from.y)-1).toString())   //Move left or right
-                  ){
-                        board[to.x][to.y] = current;
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-left
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)-2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)-1).toString()]).charAt(0) === "b"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)-1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-right
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)+2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)+1).toString()]).charAt(0) === "b"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)+1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-            else if ( //cap lower-left
-                    dest === ""
-                    && (to.x === nextLetter(nextLetter(from.x)))
-                    && (to.y === (parseInt(from.y)-2).toString() || to.y === from.y)
-                    && (board[nextLetter(from.x)][(parseInt(from.y)-1).toString()]).charAt(0) === "b"
-                ){
-                        board[nextLetter(from.x)][(parseInt(from.y)-1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-            else if ( //cap lower-right
-                    dest === ""
-                    && (to.x === nextLetter(nextLetter(from.x)))
-                    && (to.y === (parseInt(from.y)+2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)+1).toString()]).charAt(0) === "b"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)+1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-        }
-        else{
-            if(
-                    dest === ""
-                    && (to.x === lastLetter(from.x)) //Move to empty up
-                    && (to.y === (parseInt(from.y)+1).toString() || (parseInt(from.y)-1).toString())   //Move left or right
-                  ){
-                        board[to.x][to.y] = current;
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-left
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)-2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)-1).toString()]).charAt(0) === "b"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)-1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-right
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)+2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)+1).toString()]).charAt(0) === "b"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)+1).toString()] = ""; //cap enemy piece
-                        board.blackCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-            }
-        }
-        else if(current.charAt(0)==="b" && team==="black"){
-            if(current.charAt(1)==="k"){
-                if(
-                    dest === ""
-                    && (to.x === nextLetter(from.x) || to.x === lastLetter(from.x)) //Move to empty up or down
-                    && (to.y === (parseInt(from.y)+1).toString() || (parseInt(from.y)-1).toString())   //Move left or right
-                  ){
-                        board[to.x][to.y] = current;
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-left
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)-2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)-1).toString()]).charAt(0) === "r"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)-1).toString()] = ""; //cap enemy piece
-                        board.redCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap upper-right
-                    dest === ""
-                    && (to.x === lastLetter(lastLetter(from.x)))
-                    && (to.y === (parseInt(from.y)+2).toString() || to.y === from.y)
-                    && (board[lastLetter(from.x)][(parseInt(from.y)+1).toString()]).charAt(0) === "r"
-                ){
-                        board[lastLetter(from.x)][(parseInt(from.y)+1).toString()] = ""; //cap enemy piece
-                        board.redCount--;
-
-                        board[to.x][to.y] = current; //move player piece
-                        board[from.x][from.y] = "";
-                    }
-                else if ( //cap lower-left
-                        dest === ""
-                        && (to.x === nextLetter(nextLetter(from.x)))
-                        && (to.y === (parseInt(from.y)-2).toString() || to.y === from.y)
-                        && (board[nextLetter(from.x)][(parseInt(from.y)-1).toString()]).charAt(0) === "r"
-                    ){
-                            board[nextLetter(from.x)][(parseInt(from.y)-1).toString()] = ""; //cap enemy piece
-                            board.redCount--;
-
-                            board[to.x][to.y] = current; //move player piece
-                            board[from.x][from.y] = "";
-                        }
-                else if ( //cap lower-right
-                        dest === ""
-                        && (to.x === nextLetter(nextLetter(from.x)))
-                        && (to.y === (parseInt(from.y)+2).toString() || to.y === from.y)
-                        && (board[lastLetter(from.x)][(parseInt(from.y)+1).toString()]).charAt(0) === "r"
-                    ){
-                            board[lastLetter(from.x)][(parseInt(from.y)+1).toString()] = ""; //cap enemy piece
-                            board.redCount--;
-
-                            board[to.x][to.y] = current; //move player piece
-                            board[from.x][from.y] = "";
-                        }
-        }
-        else{
-            if(
+                if( //Move down
                     dest === ""
                     && to.y === nextNum(from.y)
                     && (to.x === nextLetter(from.x)
                         || to.x === lastLetter(from.x))
                   ){
-                        console.log("passed");
                         board[to.x][to.y] = current;
                         board[from.x][from.y] = "";
                     }
                 else if ( //cap lower-left
                     dest === ""
                     && to.y === nextNum(nextNum(from.y))
-                    && (to.x === lastLetter(lastLetter(from.x))
-                        || to.y === from.y)
+                    && to.x === lastLetter(lastLetter(from.x))
+                    && board[lastLetter(from.x)][nextNum(from.y)].charAt(0) === "b"
+                ){
+                        board[lastLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap lower-right
+                    dest === ""
+                    && to.y === nextNum(nextNum(from.y))
+                    && to.x === nextLetter(nextLetter(from.x))
+                    && board[nextLetter(from.x)][nextNum(from.y)].charAt(0) === "b"
+                ){
+                        board[nextLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+                else if(
+                    dest === "" //Move up
+                    && to.y === lastNum(from.y)
+                    && (to.x === nextLetter(from.x)
+                        || to.x === lastLetter(from.x))
+                  ){
+                        board[to.x][to.y] = current;
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap upper-left
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === lastLetter(lastLetter(from.x))
+                    && board[lastLetter(from.x)][nextNum(from.y)].charAt(0) === "b"
+                ){
+                        board[lastLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap upper-right
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === nextLetter(nextLetter(from.x))
+                    && board[nextLetter(from.x)][nextNum(from.y)].charAt(0) === "b"
+                ){
+                        board[nextLetter(from.x)][lastNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+        }
+        else{
+            if(
+                    dest === "" //Move up
+                    && to.y === lastNum(from.y)
+                    && (to.x === nextLetter(from.x)
+                        || to.x === lastLetter(from.x))
+                  ){
+                        board[to.x][to.y] = current;
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
+                    }
+                else if ( //cap upper-left
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === lastLetter(lastLetter(from.x))
+                    && board[lastLetter(from.x)][lastNum(from.y)].charAt(0) === "b"
+                ){
+                        board[lastLetter(from.x)][lastNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
+                    }
+                else if ( //cap upper-right
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === nextLetter(nextLetter(from.x))
+                    && board[nextLetter(from.x)][lastNum(from.y)].charAt(0) === "b"
+                ){
+                        board[nextLetter(from.x)][lastNum(from.y)] = ""; //cap enemy piece
+                        board.blackCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
+                    }
+            }
+        }
+        else if(current.charAt(0)==="b" && team==="black"){
+            if(current.charAt(1)==="k"){
+                if( //Move down
+                    dest === ""
+                    && to.y === nextNum(from.y)
+                    && (to.x === nextLetter(from.x)
+                        || to.x === lastLetter(from.x))
+                  ){
+                        board[to.x][to.y] = current;
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap lower-left
+                    dest === ""
+                    && to.y === nextNum(nextNum(from.y))
+                    && to.x === lastLetter(lastLetter(from.x))
                     && board[lastLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
                 ){
                         board[lastLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
@@ -307,8 +264,7 @@ function move(from, to, id){
                 else if ( //cap lower-right
                     dest === ""
                     && to.y === nextNum(nextNum(from.y))
-                    && (to.x === nextLetter(nextLetter(from.x))
-                        || to.y === from.y)
+                    && to.x === nextLetter(nextLetter(from.x))
                     && board[nextLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
                 ){
                         board[nextLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
@@ -316,6 +272,77 @@ function move(from, to, id){
 
                         board[to.x][to.y] = current; //move player piece
                         board[from.x][from.y] = "";
+                    }
+                else if(
+                    dest === "" //Move up
+                    && to.y === lastNum(from.y)
+                    && (to.x === nextLetter(from.x)
+                        || to.x === lastLetter(from.x))
+                  ){
+                        board[to.x][to.y] = current;
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap upper-left
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === lastLetter(lastLetter(from.x))
+                    && board[lastLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
+                ){
+                        board[lastLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.redCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+                else if ( //cap upper-right
+                    dest === ""
+                    && to.y === lastNum(lastNum(from.y))
+                    && to.x === nextLetter(nextLetter(from.x))
+                    && board[nextLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
+                ){
+                        board[nextLetter(from.x)][lastNum(from.y)] = ""; //cap enemy piece
+                        board.redCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                    }
+        }
+        else{
+            if( //Move down
+                    dest === ""
+                    && to.y === nextNum(from.y)
+                    && (to.x === nextLetter(from.x)
+                        || to.x === lastLetter(from.x))
+                  ){
+                        board[to.x][to.y] = current;
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
+                    }
+                else if ( //cap lower-left
+                    dest === ""
+                    && to.y === nextNum(nextNum(from.y))
+                    && to.x === lastLetter(lastLetter(from.x))
+                    && board[lastLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
+                ){
+                        board[lastLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.redCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
+                    }
+                else if ( //cap lower-right
+                    dest === ""
+                    && to.y === nextNum(nextNum(from.y))
+                    && to.x === nextLetter(nextLetter(from.x))
+                    && board[nextLetter(from.x)][nextNum(from.y)].charAt(0) === "r"
+                ){
+                        board[nextLetter(from.x)][nextNum(from.y)] = ""; //cap enemy piece
+                        board.redCount--;
+
+                        board[to.x][to.y] = current; //move player piece
+                        board[from.x][from.y] = "";
+                        checkKing(team, to);
                     }
             }
         }
@@ -325,14 +352,18 @@ function move(from, to, id){
 
 function genPlayer(id){
     var team;
-    if(players.blackCount > players.redCount){
-        players.redCount++;
+    if(players.blackPlayers > players.redPlayers){
+        players.redPlayers++;
         team = "red";
+        io.to(id).emit("yourTeam", "Your Team: Red");
     }
     else{
-        players.blackCount++;
+        players.blackPlayers++;
         team = "black";
+        io.to(id).emit("yourTeam", "Your Team: Black");
+
     }
+        
     players.list.push({"id":id, "team":team});
     console.log("Added " + id + "to " + team);
     updateBoard();
@@ -341,6 +372,12 @@ function genPlayer(id){
 function remPlayer(id){
     for(var x = 0; x < players.list.length; x++){
         if(id === players.list[x].id){
+            if(players.list[x].team==="red"){
+                players.redPlayers--;
+            }
+            else{
+                players.blackPlayers--;
+            }
             players.list.splice(x, 1);
             console.log("Removed " + id);
             break;
@@ -359,19 +396,37 @@ function getTeam(id){
     return team;
 }
 
-function gameOver(){
-    if(board.blackCount <= 0){
-        console.log("Red wins");
-        resetBoard();
+function checkKing(team, to){
+    if(team==="black" && to.y==="8"){
+        board[to.x][to.y] = "bk";
     }
-    else if(board.redCount <= 0){
-        console.log("Black wins");
-        resetBoard();
+    else if(team==="red" && to.y==="1"){
+        board[to.x][to.y] = "rk";
     }
 }
 
+function gameOver(){
+    if(board.blackCount <= 0){
+        console.log("Red Wins");
+        io.emit("win", "Red Wins");
+        var win = setTimeout(function(){
+                clearTimeout(win);
+                resetBoard();
+            }, 1000);
+    }
+    else if(board.redCount <= 0){
+        console.log("Black Wins");
+        io.emit("win","Black Wins");
+            var win = setTimeout(function(){
+                clearTimeout(win);
+                resetBoard();
+            }, 1000);
+        }
+}
+
 function resetBoard(){
-    board = reset;
+    console.log("Reseting");
+    board = JSON.parse(JSON.stringify(reset));
     updateBoard();
 }
 
