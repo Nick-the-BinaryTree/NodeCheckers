@@ -52,10 +52,11 @@ document.addEventListener("DOMContentLoaded", function(){
    c3.onmousemove=function(e){click(ctx3, e, c3)}
    //setInterval(function(){fadeTrace(ctx3)}, 30);
     
-   /*document.onkeypress = function(e){
-        console.log("did it");
-        socket.emit("redWin");
-   }*/
+   document.onkeydown = function(e){
+       if(e.keyCode === 82){
+            socket.emit("reset");
+       }
+   }
 });
 
 function click(ctx, e, c){

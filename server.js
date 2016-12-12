@@ -115,7 +115,7 @@ io.on('connection', function(socket){
        remPlayer(socket.id); 
     });
     
-    //socket.on('reset', function(){resetBoard()});
+    socket.on('reset', function(){resetBoard()});
     //socket.on('redWin', function(){board.blackCount=0;gameOver()});
 });
 
